@@ -6,6 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		F2615A1A2F47924C0094070A /* Domain in Frameworks */ = {isa = PBXBuildFile; productRef = F2615A192F47924C0094070A /* Domain */; };
+		F2615A202F4794D80094070A /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = F2615A1F2F4794D80094070A /* README.md */; };
+		F2615A312F479B950094070A /* Data in Frameworks */ = {isa = PBXBuildFile; productRef = F2615A302F479B950094070A /* Data */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		F261598C2F4781010094070A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +33,9 @@
 		F261597E2F4780FE0094070A /* iOSCounterApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iOSCounterApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F261598B2F4781010094070A /* iOSCounterAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iOSCounterAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F26159952F4781010094070A /* iOSCounterAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iOSCounterAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F2615A142F478EFF0094070A /* Domain */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Domain; sourceTree = "<group>"; };
+		F2615A1F2F4794D80094070A /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		F2615A2B2F4798320094070A /* Data */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Data; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -45,6 +54,11 @@
 			path = iOSCounterAppUITests;
 			sourceTree = "<group>";
 		};
+		F2615A172F4791BE0094070A /* docs */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = docs;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,6 +66,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F2615A312F479B950094070A /* Data in Frameworks */,
+				F2615A1A2F47924C0094070A /* Domain in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -75,9 +91,14 @@
 		F26159752F4780FD0094070A = {
 			isa = PBXGroup;
 			children = (
+				F2615A2B2F4798320094070A /* Data */,
+				F2615A1F2F4794D80094070A /* README.md */,
+				F2615A172F4791BE0094070A /* docs */,
+				F2615A142F478EFF0094070A /* Domain */,
 				F26159802F4780FE0094070A /* iOSCounterApp */,
 				F261598E2F4781010094070A /* iOSCounterAppTests */,
 				F26159982F4781010094070A /* iOSCounterAppUITests */,
+				F2615A182F47924C0094070A /* Frameworks */,
 				F261597F2F4780FE0094070A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -90,6 +111,13 @@
 				F26159952F4781010094070A /* iOSCounterAppUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		F2615A182F47924C0094070A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -109,9 +137,12 @@
 			);
 			fileSystemSynchronizedGroups = (
 				F26159802F4780FE0094070A /* iOSCounterApp */,
+				F2615A172F4791BE0094070A /* docs */,
 			);
 			name = iOSCounterApp;
 			packageProductDependencies = (
+				F2615A192F47924C0094070A /* Domain */,
+				F2615A302F479B950094070A /* Data */,
 			);
 			productName = iOSCounterApp;
 			productReference = F261597E2F4780FE0094070A /* iOSCounterApp.app */;
@@ -212,6 +243,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F2615A202F4794D80094070A /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -570,6 +602,17 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		F2615A192F47924C0094070A /* Domain */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Domain;
+		};
+		F2615A302F479B950094070A /* Data */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Data;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = F26159762F4780FD0094070A /* Project object */;
 }
