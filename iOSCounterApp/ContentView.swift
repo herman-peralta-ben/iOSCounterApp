@@ -29,6 +29,7 @@ struct ContentView: View {
     // 5. Diffing: SwiftUI compares the new body with the old body (this is very fast, just like the Virtual DOM or Flutter's Element Tree).
     // 6. Patching: It only updates the specific parts of the actual screen that changed (e.g., the Text showing the number).
     @State private var counter: Int? = nil
+    @State private var activeError: ErrorData? = nil
     
     // 💡 'body': Computed property that defines the View hierarchy.
     // Equivalent to the build() method in Flutter or a @Composable function.
@@ -39,36 +40,55 @@ struct ContentView: View {
                 .fontWeight(.bold)
                 .padding()
             
-            VStack {
+            VStack(spacing: 20) {
                 if let count = counter {
                     Text("\(count)")
                         .font(.system(size: 80, weight: .bold))
                         .padding()
+                    // region 💡 correct way to add an animation
+                        .transition(.asymmetric(
+                            insertion: .scale.combined(with: .opacity).animation(.spring()),
+                            removal: .opacity.animation(.easeInOut)
+                        ))
+                        .id(count) // 🚨 Important, we ask to apply animation when count changes
+                    // endregion 💡 correct way to add an animation
+                    HStack(spacing: 20) {
+                        CounterButton(icon: "minus", color: .red, action: decrementCounter)
+                        CounterButton(icon: "plus", color: .green, action: incrementCounter)
+                    }
+                    
+                    Button(action: resetCounter) {
+                        Text("Reset")
+                            .font(.title)
+                            .padding()
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                    }
+                    .padding(.top, 20)
                 } else {
                     ProgressView()
                 }
             }.task {
-                // 💡 Similar to Flutter's BlocConsumer, will redraw the caller UI
+                // 💡 Similar to Flutter's BlocConsumer, will redraw the caller UI once this
+                // task completes. It's a wrapper for Task {...}.
                 counter = await repository.getCounterValue()
             }
-            
-            HStack(spacing: 20) {
-                CounterButton(icon: "minus", color: .red, action: decrementCounter)
-                CounterButton(icon: "plus", color: .green, action: incrementCounter)
-            }
-            
-            Button(action: resetCounter) {
-                Text("Reset")
-                    .font(.title)
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-            }
-            .padding(.top, 20)
         }
         .padding()
-        
+        .alert(
+            activeError?.title ?? "Error",
+            isPresented: Binding(          // Manual visibility handling
+                get: { activeError != nil },
+                set: { if !$0 { activeError = nil } }
+                                ),
+            actions: {
+                Button("Ok", role: .cancel) { }
+            },
+            message: {
+                Text(activeError?.message ?? "")
+            }
+        )
     }
     
     // MARK: - Intentions / Actions
@@ -77,28 +97,73 @@ struct ContentView: View {
     // Since 'counter' is @State, mutating it automatically invalidates the view.
     private func incrementCounter() {
         Task {
+            counter = nil
             counter = await repository.increment()
         }
+        // region 💡 experimental way to add animation based on changes
+        /*Task {
+         withAnimation(.easeInOut) {
+         counter = nil
+         }
+         
+         let newCounter = await repository.increment()
+         
+         withAnimation(.spring()) {
+         counter = newCounter
+         }
+         }*/
+        // endregion 💡 experimental way to add animation based on changes
     }
     
     private func decrementCounter() {
         Task {
+            counter = nil
             counter = await repository.decrement()
         }
     }
     
     private func resetCounter() {
         Task {
-            await repository.reset()
-            counter = await repository.getCounterValue()
+            counter = nil
+            // 💡 Try to call reset, see CounterInMemoryRepository.enableResetFailure for more details
+            do {
+                try await repository.reset()
+                counter = await repository.getCounterValue()
+            } catch {
+                activeError = ErrorData(
+                    title: "Couldn't reset",
+                    message: error.localizedDescription
+                )
+                // 🚨 Important, restore state to remove loader
+                counter = await repository.getCounterValue()
+            }
         }
     }
 }
 
-#Preview("Case 1") {
+// MARK: - Support code
+
+// View data to hold error details
+struct ErrorData: Identifiable {
+    let id = UUID()
+    let title: String
+    let message: String
+}
+
+// MARK: - Previews
+
+#Preview("Default counter init") {
+    ContentView(repository: CounterInMemoryRepository())
+}
+
+#Preview("Default counter init with reset error") {
+    ContentView(repository: CounterInMemoryRepository(enableResetFailure: true))
+}
+
+#Preview("Custom small counter init") {
     ContentView(repository: CounterInMemoryRepository(initialCount: 42))
 }
 
-#Preview("Case 2") {
+#Preview("Custom large counter init ") {
     ContentView(repository: CounterInMemoryRepository(initialCount: 9999999))
 }

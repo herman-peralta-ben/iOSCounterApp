@@ -5,5 +5,9 @@ public protocol CounterRepository {
     func getCounterValue() async -> Int
     func increment() async -> Int
     func decrement() async -> Int
-    func reset() async
+    func reset() async throws
+}
+
+public enum CounterRepositoryError: Error {
+    case resetNotAllowed
 }
