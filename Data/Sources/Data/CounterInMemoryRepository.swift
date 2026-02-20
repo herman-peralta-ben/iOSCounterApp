@@ -37,7 +37,7 @@ public class CounterInMemoryRepository: CounterRepository {
     }
     
     public func reset() async throws {
-        await debugDelay()
+        await debugDelay(millis: 1000)
         
         // Simulate error 50% of calls when enabled
         if enableResetFailure && Int.random(in: 1...2) == 1 {

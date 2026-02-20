@@ -18,8 +18,6 @@ import Data
 // while the Framework keeps the actual data safe in these internal structures.
 struct ContentView: View {
     
-    let repository: CounterRepository
-    
     // 💡 @State: Property Wrapper for local state.
     // Similar to Compose's 'mutableStateOf'/'remember', or Flutter's 'setState()'.
     // 1. Mutation: You run counter += 1.
@@ -28,12 +26,16 @@ struct ContentView: View {
     // 4. Re-evaluating the Body: SwiftUI calls the var body: some View property again.
     // 5. Diffing: SwiftUI compares the new body with the old body (this is very fast, just like the Virtual DOM or Flutter's Element Tree).
     // 6. Patching: It only updates the specific parts of the actual screen that changed (e.g., the Text showing the number).
-    @State private var counter: Int? = nil
-    @State private var activeError: ErrorData? = nil
+    @State private var viewModel: CounterViewModel
+    
+    init(viewModel: CounterViewModel) {
+        self._viewModel = State(wrappedValue: viewModel)
+    }
     
     // 💡 'body': Computed property that defines the View hierarchy.
     // Equivalent to the build() method in Flutter or a @Composable function.
     var body: some View {
+
         VStack(spacing: 20) {
             Text("iOS Counter App")
                 .font(.largeTitle)
@@ -41,7 +43,7 @@ struct ContentView: View {
                 .padding()
             
             VStack(spacing: 20) {
-                if let count = counter {
+                if let count = viewModel.counter {
                     Text("\(count)")
                         .font(.system(size: 80, weight: .bold))
                         .padding()
@@ -53,11 +55,11 @@ struct ContentView: View {
                         .id(count) // 🚨 Important, we ask to apply animation when count changes
                     // endregion 💡 correct way to add an animation
                     HStack(spacing: 20) {
-                        CounterButton(icon: "minus", color: .red, action: decrementCounter)
-                        CounterButton(icon: "plus", color: .green, action: incrementCounter)
+                        CounterButton(icon: "minus", color: .red, action: viewModel.increment)
+                        CounterButton(icon: "plus", color: .green, action: viewModel.decrement)
                     }
                     
-                    Button(action: resetCounter) {
+                    Button(action: viewModel.reset) {
                         Text("Reset")
                             .font(.title)
                             .padding()
@@ -72,72 +74,23 @@ struct ContentView: View {
             }.task {
                 // 💡 Similar to Flutter's BlocConsumer, will redraw the caller UI once this
                 // task completes. It's a wrapper for Task {...}.
-                counter = await repository.getCounterValue()
+                viewModel.start()
             }
         }
         .padding()
         .alert(
-            activeError?.title ?? "Error",
+            viewModel.activeError?.title ?? "Error",
             isPresented: Binding(          // Manual visibility handling
-                get: { activeError != nil },
-                set: { if !$0 { activeError = nil } }
-                                ),
+                get: { viewModel.activeError != nil },
+                set: { if !$0 { viewModel.resetActiveError() } }
+            ),
             actions: {
                 Button("Ok", role: .cancel) { }
             },
             message: {
-                Text(activeError?.message ?? "")
+                Text(viewModel.activeError?.message ?? "")
             }
         )
-    }
-    
-    // MARK: - Intentions / Actions
-    
-    // 💡 Encapsulating logic in private functions to keep 'body' clean.
-    // Since 'counter' is @State, mutating it automatically invalidates the view.
-    private func incrementCounter() {
-        Task {
-            counter = nil
-            counter = await repository.increment()
-        }
-        // region 💡 experimental way to add animation based on changes
-        /*Task {
-         withAnimation(.easeInOut) {
-         counter = nil
-         }
-         
-         let newCounter = await repository.increment()
-         
-         withAnimation(.spring()) {
-         counter = newCounter
-         }
-         }*/
-        // endregion 💡 experimental way to add animation based on changes
-    }
-    
-    private func decrementCounter() {
-        Task {
-            counter = nil
-            counter = await repository.decrement()
-        }
-    }
-    
-    private func resetCounter() {
-        Task {
-            counter = nil
-            // 💡 Try to call reset, see CounterInMemoryRepository.enableResetFailure for more details
-            do {
-                try await repository.reset()
-                counter = await repository.getCounterValue()
-            } catch {
-                activeError = ErrorData(
-                    title: "Couldn't reset",
-                    message: error.localizedDescription
-                )
-                // 🚨 Important, restore state to remove loader
-                counter = await repository.getCounterValue()
-            }
-        }
     }
 }
 
@@ -153,17 +106,17 @@ struct ErrorData: Identifiable {
 // MARK: - Previews
 
 #Preview("Default counter init") {
-    ContentView(repository: CounterInMemoryRepository())
+    ContentView(viewModel: CounterViewModel(repository: CounterInMemoryRepository()))
 }
 
 #Preview("Default counter init with reset error") {
-    ContentView(repository: CounterInMemoryRepository(enableResetFailure: true))
+    ContentView(viewModel: CounterViewModel(repository: CounterInMemoryRepository(enableResetFailure: true)))
 }
 
 #Preview("Custom small counter init") {
-    ContentView(repository: CounterInMemoryRepository(initialCount: 42))
+    ContentView(viewModel: CounterViewModel(repository: CounterInMemoryRepository(initialCount: 42)))
 }
 
 #Preview("Custom large counter init ") {
-    ContentView(repository: CounterInMemoryRepository(initialCount: 9999999))
+    ContentView(viewModel: CounterViewModel(repository: CounterInMemoryRepository(initialCount: 9999999)))
 }
