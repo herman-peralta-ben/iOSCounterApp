@@ -2,14 +2,27 @@ import Foundation
 import Observation
 import Domain
 
+public struct ErrorData: Identifiable {
+    public let id = UUID()
+    public let title: String
+    public let message: String
+}
+
+enum CounterState {
+    case idle
+    case loading
+    case success(Int)
+    case error(ErrorData)
+}
+
 @Observable
 @MainActor
-// @MainActor: Makes the ViewModel thread safe.
+// @MainActor: Makes the ViewModel Tasks {} to be executed on the Main Thread, not explicitly Thread safe.
 // Since ViewModel is @Observable, any change to its properties triggers a UI refresh.
 final class CounterViewModel {
     
-    public private(set) var counter: Int?
-    public private(set) var activeError: ErrorData?
+    // 🚨 Implementing Unidirectional Data Flow
+    private(set) var state: CounterState = .idle
     
     private let repository: CounterRepository
     
@@ -22,47 +35,43 @@ final class CounterViewModel {
     //    - On Android we use viewModelScope which is bound to the ViewModel lifecycle, so when
     //    the ViewModel dies, the coroutine is cancelled.
     //    - On iOS we need to handle this carefully
-    func start() {
+    private func performAction(_ action: @escaping () async -> Int) {
         Task {
-            self.counter = await repository.getCounterValue()
+            state = .loading
+            let newValue = await action()
+            state = .success(newValue)
         }
+    }
+    
+    func start() {
+        performAction { await self.repository.getCounterValue() }
     }
     
     func increment() {
-        Task {
-            self.counter = nil
-            
-            self.counter = await repository.increment()
-        }
+        performAction { await self.repository.increment() }
     }
     
     func decrement() {
-        Task {
-            self.counter = nil
-            
-            self.counter = await repository.decrement()
-        }
+        performAction { await self.repository.decrement() }
     }
     
     func reset() {
         Task {
-            self.counter = nil
+            self.state = .loading
             
             do {
                 try await repository.reset()
-                self.counter = await repository.getCounterValue()
+
+                let value = await repository.getCounterValue()
+                self.state = .success(value)
             } catch {
-                self.activeError = ErrorData(
-                    title: "Couldn't reset",
-                    message: error.localizedDescription
+                self.state = .error(
+                    ErrorData(
+                        title: "Couldn't reset",
+                        message: error.localizedDescription,
+                    )
                 )
-                // 💡 Optional, recover last value
-                self.counter = await repository.getCounterValue()
             }
         }
-    }
-    
-    func resetActiveError() {
-        activeError = nil
     }
 }

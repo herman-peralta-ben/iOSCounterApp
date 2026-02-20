@@ -43,33 +43,36 @@ struct ContentView: View {
                 .padding()
             
             VStack(spacing: 20) {
-                if let count = viewModel.counter {
-                    Text("\(count)")
-                        .font(.system(size: 80, weight: .bold))
-                        .padding()
-                    // region 💡 correct way to add an animation
-                        .transition(.asymmetric(
-                            insertion: .scale.combined(with: .opacity).animation(.spring()),
-                            removal: .opacity.animation(.easeInOut)
-                        ))
-                        .id(count) // 🚨 Important, we ask to apply animation when count changes
-                    // endregion 💡 correct way to add an animation
-                    HStack(spacing: 20) {
-                        CounterButton(icon: "minus", color: .red, action: viewModel.decrement)
-                        CounterButton(icon: "plus", color: .green, action: viewModel.increment)
-                    }
-                    
-                    Button(action: viewModel.reset) {
-                        Text("Reset")
-                            .font(.title)
+                Group {
+                    switch viewModel.state {
+                    case .idle, .loading, .error: // 💡OR
+                        ProgressView()
+                    case .success(let count):
+                        Text("\(count)")
+                            .font(.system(size: 80, weight: .bold))
                             .padding()
-                            .background(Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
+                        // region 💡 correct way to add an animation
+                            .transition(.asymmetric(
+                                insertion: .scale.combined(with: .opacity).animation(.spring()),
+                                removal: .opacity.animation(.easeInOut)
+                            ))
+                            .id(count) // 🚨 Important, we ask to apply animation when count changes
+                        // endregion 💡 correct way to add an animation
+                        HStack(spacing: 20) {
+                            CounterButton(icon: "minus", color: .red, action: viewModel.decrement)
+                            CounterButton(icon: "plus", color: .green, action: viewModel.increment)
+                        }
+                        
+                        Button(action: viewModel.reset) {
+                            Text("Reset")
+                                .font(.title)
+                                .padding()
+                                .background(Color.blue)
+                                .foregroundColor(.white)
+                                .cornerRadius(10)
+                        }
+                        .padding(.top, 20)
                     }
-                    .padding(.top, 20)
-                } else {
-                    ProgressView()
                 }
             }.task {
                 // 💡 Similar to Flutter's BlocConsumer, will redraw the caller UI once this
@@ -79,28 +82,30 @@ struct ContentView: View {
         }
         .padding()
         .alert(
-            viewModel.activeError?.title ?? "Error",
-            isPresented: Binding(          // Manual visibility handling
-                get: { viewModel.activeError != nil },
-                set: { if !$0 { viewModel.resetActiveError() } }
-            ),
-            actions: {
-                Button("Ok", role: .cancel) { }
-            },
-            message: {
-                Text(viewModel.activeError?.message ?? "")
-            }
-        )
+            item: Binding(
+                get: {
+                    // 💡 Only when the state is error, return the data to make the dialog appear
+                    if case .error(let data) = viewModel.state { return data }
+                    return nil
+                },
+                set: { _ in
+                    // This is called when the user closes the dialog
+                    // But we handle it on the buttons
+                }
+            )
+        ) { errorData in
+            Alert(
+                title: Text(errorData.title),
+                message: Text(errorData.message),
+                primaryButton: .default(Text("Retry")) {
+                    viewModel.reset()
+                },
+                secondaryButton: .default(Text("OK")) {
+                    viewModel.start() // fallback to last value
+                }
+            )
+        }
     }
-}
-
-// MARK: - Support code
-
-// View data to hold error details
-struct ErrorData: Identifiable {
-    let id = UUID()
-    let title: String
-    let message: String
 }
 
 // MARK: - Previews
