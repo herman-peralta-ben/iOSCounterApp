@@ -1,7 +1,14 @@
 import Domain
 
 // 🚨 Mark this as public, otherwise Presentation won't see it
-public class CounterInMemoryRepository: CounterRepository {
+// 🚨 A Swift `actor` ensures **serialized access** to its state, making properties
+// behave (in the Kotlin/Java world) as if they were **atomic** and methods as
+// if they were **synchronized**.
+// It is thread-safe by design, guaranteeing that only one task can access
+// its internal state at any given time to prevent data races.
+// Concurrent calls (e.g., 100 increments) are queued in the actor's "mailbox,"
+// ensuring predictable, sequential execution without blocking threads.
+public actor CounterInMemoryRepository: CounterRepository {
     // 💡 Mutable property
     private var count: Int
     // 💡 Immutable property
