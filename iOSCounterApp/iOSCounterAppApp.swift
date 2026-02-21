@@ -11,7 +11,7 @@ struct iOSCounterAppApp: App {
     var body: some Scene {
         WindowGroup {
             // 💡 Manual Dependency Injection
-            ContentView(repository: sharedRepository)
+            ContentView(viewModel: CounterViewModel(repository: sharedRepository))
         }
     }
 }
