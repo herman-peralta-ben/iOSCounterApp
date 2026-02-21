@@ -2,19 +2,6 @@ import Foundation
 import Observation
 import Domain
 
-public struct ErrorData: Identifiable {
-    public let id = UUID()
-    public let title: String
-    public let message: String
-}
-
-enum CounterState {
-    case idle
-    case loading
-    case success(Int)
-    case error(ErrorData)
-}
-
 @Observable
 @MainActor
 // @MainActor: Makes the ViewModel Tasks {} to be executed on the Main Thread, not explicitly Thread safe.
@@ -22,7 +9,12 @@ enum CounterState {
 final class CounterViewModel {
     
     // 🚨 Implementing Unidirectional Data Flow
-    private(set) var state: CounterState = .idle
+    private(set) var state: CounterState = .idle {
+        didSet { onStateChange?(state) }
+    }
+
+    /// INTERNAL: Only for testing purposes. Used by ``recordStates(initialState:setup:action:)``  to capture emissions.
+    var onStateChange: ((CounterState) -> Void)?
     
     private let repository: CounterRepository
     
