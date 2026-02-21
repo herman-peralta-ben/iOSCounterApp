@@ -55,8 +55,8 @@ struct ContentView: View {
                         .id(count) // 🚨 Important, we ask to apply animation when count changes
                     // endregion 💡 correct way to add an animation
                     HStack(spacing: 20) {
-                        CounterButton(icon: "minus", color: .red, action: viewModel.increment)
-                        CounterButton(icon: "plus", color: .green, action: viewModel.decrement)
+                        CounterButton(icon: "minus", color: .red, action: viewModel.decrement)
+                        CounterButton(icon: "plus", color: .green, action: viewModel.increment)
                     }
                     
                     Button(action: viewModel.reset) {
