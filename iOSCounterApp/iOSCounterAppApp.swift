@@ -1,17 +1,17 @@
-//
-//  iOSCounterAppApp.swift
-//  iOSCounterApp
-//
-//  Created by Sergio Herman Peralta Benhumea on 19/02/26.
-//
-
 import SwiftUI
+import Data
 
 @main
 struct iOSCounterAppApp: App {
+    let sharedRepository = CounterInMemoryRepository(
+        initialCount: 5,
+        enableResetFailure: true,
+    )
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            // 💡 Manual Dependency Injection
+            ContentView(repository: sharedRepository)
         }
     }
 }
