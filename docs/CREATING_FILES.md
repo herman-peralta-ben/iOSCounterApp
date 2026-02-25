@@ -4,4 +4,4 @@
 2. Search "Markdown".
 3. Make sure you are not adding it to any target before saving it.
 
-<img src="./images/CreateFile.png" width="400" alt="Create non project file">
+<img src="./images/CreateFile.webp" width="400" alt="Create non project file">

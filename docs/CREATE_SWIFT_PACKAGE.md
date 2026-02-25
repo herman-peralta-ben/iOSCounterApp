@@ -11,6 +11,6 @@ You must explicitly tell your App to "import" this binary, similar to adding a d
 3. General Tab: Scroll down to Frameworks, Libraries, and Embedded Content.
 4. Add (+) : Click the plus button, search for your Domain library, and add it.
 
-<img src="./images/Setup_Libs.png" width="400" alt="Frameworks, Libraries, and Embedded Content"> <img src="./images/Setup_Add_package.png" width="200" alt="Frameworks, Libraries, and Embedded Content">
+<img src="./images/Setup_Libs.webp" width="400" alt="Frameworks, Libraries, and Embedded Content"> <img src="./images/Setup_Add_package.webp" width="200" alt="Frameworks, Libraries, and Embedded Content">
 
 5. To verify, add `import Domain` to `ContentView.swift` and Clean & Build by pressing <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>K</kbd> (Clean) and then <kbd>Cmd</kbd> + <kbd>B</kbd> (Build) to refresh the index.
